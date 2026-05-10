@@ -22,6 +22,7 @@ temp/
 tmp/
 *.tmp
 tutorial/
+1_TheoryAgenticAI.md
 
 # OS files
 .DS_Store
