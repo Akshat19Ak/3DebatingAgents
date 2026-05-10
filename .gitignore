@@ -1,0 +1,31 @@
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment variables
+.env
+
+# Streamlit
+.streamlit/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+tutorial/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
