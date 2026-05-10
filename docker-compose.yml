@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  debate-system:
+    build: .
+    container_name: debate-system
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+networks:
+  default:
+    name: debate-network
