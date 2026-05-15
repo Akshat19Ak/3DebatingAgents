@@ -25,7 +25,7 @@ from src.metrics import DebateEvaluator
 #  PAGE CONFIG  (must be the very first Streamlit call)
 # ══════════════════════════════════════════════════════════════════════
 st.set_page_config(
-    page_title="Multi-Agent Debate System",
+    page_title="OmniView Debate System",
     page_icon="⚖️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -132,17 +132,22 @@ h3 { color: #38bdf8 !important; }
 #  SIDEBAR
 # ══════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown("## ⚖️ Debate System")
+    st.markdown("## ⚖️ OmniView")
     st.markdown("---")
 
     # API Key status
     load_dotenv()
     api_key = os.getenv("GROQ_API_KEY", "")
     if api_key and api_key != "your_groq_api_key_here":
-        st.markdown('<span class="badge badge-green">● API Key OK</span>', unsafe_allow_html=True)
+        st.markdown('<span class="badge badge-green">● API Key Connected</span>', unsafe_allow_html=True)
     else:
         st.markdown('<span class="badge" style="background:#7f1d1d;color:#fca5a5;">✗ API Key Missing</span>', unsafe_allow_html=True)
-        st.error("Set `GROQ_API_KEY` in your `.env` file.")
+        st.error("Groq API Key not found.")
+        user_key = st.text_input("Enter Groq API Key:", type="password")
+        if user_key:
+            os.environ["GROQ_API_KEY"] = user_key
+            api_key = user_key
+            st.success("API Key loaded for this session!")
 
     st.markdown("---")
     st.markdown("### 🤖 The Agents")
@@ -161,7 +166,10 @@ with st.sidebar:
 <span class="badge badge-green">Streamlit</span>
 """, unsafe_allow_html=True)
     st.markdown("---")
-    st.caption("v2 · Streamlit Edition")
+    st.markdown("### 📊 Platform Metrics")
+    st.caption("OmniView evaluates debate diversity and ensures unbiased decisions via mathematical influence tracking.")
+    st.markdown("---")
+    st.caption("OmniView v2.0 SaaS Edition")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -174,6 +182,7 @@ defaults = {
     "risk_out":        None,
     "final_decision":  None,
     "metrics_report":  None,
+    "raw_metrics":     None,
     "error":           None,
     "last_topic":      "",
 }
@@ -218,7 +227,7 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
         risk_output      = str(tasks[1].output) if len(tasks) > 1 and tasks[1].output else "No output captured."
         final_decision   = str(result)
         
-        evaluator.evaluate(optimist_output, risk_output, final_decision)
+        raw_metrics = evaluator.evaluate(optimist_output, risk_output, final_decision)
         report = evaluator.get_formatted_report()
 
         log_queue.put({
@@ -227,6 +236,7 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
             "risk_out":       risk_output,
             "final_decision": final_decision,
             "metrics_report": report,
+            "raw_metrics":    raw_metrics,
         })
     except Exception as exc:
         log_queue.put({"type": "error", "message": str(exc)})
@@ -237,19 +247,34 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
 # ══════════════════════════════════════════════════════════════════════
 #  MAIN PAGE
 # ══════════════════════════════════════════════════════════════════════
-st.markdown("# ⚖️ Multi-Agent Debate & Decision System")
+st.markdown("# ⚖️ OmniView Multi-Agent Debate and Decision System")
 st.markdown(
     "Enter any **business idea, strategic decision, or proposal** below. "
     "Three AI agents will debate it and deliver a **balanced executive verdict**."
 )
 st.markdown("---")
 
+# ── Quick Actions ──────────────────────────────────────────────────
+st.markdown("### ⚡ Quick Decision Templates (AI/ML & SWE)")
+def set_topic(t):
+    st.session_state.topic_widget = t
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.button("RAG: Vector vs Graph DB", on_click=set_topic, args=("Should we use vector databases or graph databases for our new RAG system?",))
+with col2:
+    st.button("Cloud: AWS to GCP Migration", on_click=set_topic, args=("Should we migrate from AWS to GCP to reduce ML inference costs?",))
+with col3:
+    st.button("Support: Human vs AI Bots", on_click=set_topic, args=("Should we replace our customer support human team completely with AI chatbots?",))
+
+st.markdown("<br>", unsafe_allow_html=True)
+
 # ── Input ──────────────────────────────────────────────────────────
 topic = st.text_area(
     label       = "💡 Decision / Topic",
     placeholder = "e.g. 'Should we launch a subscription mobile payments product in Southeast Asia?'",
     height      = 110,
-    key         = "topic_input",
+    key         = "topic_widget",
 )
 
 run_button = st.button("🚀 Run Debate", disabled=st.session_state.running)
@@ -268,6 +293,7 @@ if run_button:
         st.session_state.risk_out       = None
         st.session_state.final_decision = None
         st.session_state.metrics_report = None
+        st.session_state.raw_metrics    = None
         st.session_state.error          = None
         st.session_state.last_topic     = topic.strip()
 
@@ -303,6 +329,7 @@ if run_button:
                     st.session_state.risk_out       = item["risk_out"]
                     st.session_state.final_decision = item["final_decision"]
                     st.session_state.metrics_report = item.get("metrics_report")
+                    st.session_state.raw_metrics    = item.get("raw_metrics")
                 elif item["type"] == "error":
                     st.session_state.error = item["message"]
             else:
@@ -351,9 +378,26 @@ elif st.session_state.final_decision:
         unsafe_allow_html=True,
     )
 
+    if st.session_state.raw_metrics:
+        opt_inf = st.session_state.raw_metrics.get("Debate_Quality", {}).get("raw_opt_influence", 50.0)
+        risk_inf = st.session_state.raw_metrics.get("Debate_Quality", {}).get("raw_risk_influence", 50.0)
+        
+        st.markdown("#### 🌡️ Moderator Inclination Analysis")
+        st.markdown(f"""
+        <div style="display: flex; height: 32px; border-radius: 16px; overflow: hidden; margin-bottom: 20px; border: 1px solid #334155;">
+            <div style="width: {opt_inf}%; background: linear-gradient(90deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem; transition: width 1s ease;">
+                Optimist ({opt_inf}%)
+            </div>
+            <div style="width: {risk_inf}%; background: linear-gradient(90deg, #ef4444, #7f1d1d); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.85rem; transition: width 1s ease;">
+                Risk Analyst ({risk_inf}%)
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     if st.session_state.metrics_report:
         st.markdown("---")
         st.markdown("## 📊 Observability & Performance Metrics")
+        st.markdown("Highlighting Agentic AI efficiency, neutrality, and token utilization:")
         st.markdown(
             f'<div class="log-box">{st.session_state.metrics_report}</div>',
             unsafe_allow_html=True

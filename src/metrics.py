@@ -158,6 +158,8 @@ class DebateEvaluator:
                 "Debate_Diversity_Score": debate_diversity_score, # Closer to 1.0 means highly distinct viewpoints
                 "Optimist_Contribution_Influence": f"{opt_influence}%",
                 "Risk_Analyst_Contribution_Influence": f"{risk_influence}%",
+                "raw_opt_influence": opt_influence,    # Exposed for UI Bar
+                "raw_risk_influence": risk_influence,  # Exposed for UI Bar
                 "Consensus_Quality_Score": consensus_quality # Closer to 100 means perfectly balanced synthesis
             },
             "Human_Readability": {
@@ -183,6 +185,8 @@ class DebateEvaluator:
         for category, data in self.metrics.items():
             report += f"\n--- {category.replace('_', ' ').upper()} ---\n"
             for key, value in data.items():
+                if key.startswith("raw_"):
+                    continue # Skip raw unformatted values in the text report
                 formatted_key = key.replace('_', ' ')
                 report += f"{formatted_key}: {value}\n"
         

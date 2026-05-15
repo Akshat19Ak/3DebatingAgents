@@ -25,13 +25,15 @@ def create_tasks(decision_problem: str):
     # Task 3: The Moderator's Synthesis
     moderation_task = Task(
         description=f"Review the Optimist's report and the Risk Analyst's report regarding the idea: '{decision_problem}'. "
-                    "Weigh both sides carefully. Do not just summarize. "
-                    "Synthesize the arguments into a single, cohesive, and balanced executive decision. "
-                    "Decide whether the organization should PROCEED, ABANDON, or PIVOT the idea.",
-        expected_output="An Executive Summary containing:\n"
-                        "1. A brief summary of the upside.\n"
-                        "2. A brief summary of the downside.\n"
-                        "3. The Final Verdict (Proceed/Abandon/Pivot) with a clear, logical justification.",
+                    "You must evaluate both sides sequentially. "
+                    "First, explicitly state the Pros given by the Optimist. "
+                    "Second, explicitly state the Cons given by the Risk Analyst. "
+                    "Finally, synthesize the arguments into a single, cohesive, and balanced executive decision. "
+                    "You must arrive at a single decision out of the question: whether the organization should PROCEED, ABANDON, or PIVOT.",
+        expected_output="An Executive Summary containing exactly:\n"
+                        "1. PROS (Optimist View): A clear summary of the upside.\n"
+                        "2. CONS (Risk Analyst View): A clear summary of the downside.\n"
+                        "3. FINAL VERDICT: A single definitive decision (Proceed/Abandon/Pivot) with a clear, logical justification.",
         agent=moderator_agent,
         context=[optimist_task, risk_task] # Moderator needs the outputs of both agents
     )
