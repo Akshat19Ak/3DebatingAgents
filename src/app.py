@@ -199,7 +199,7 @@ with st.sidebar:
 <span class="badge badge-purple">LiteLLM</span>
 """, unsafe_allow_html=True)
     st.markdown("---")
-    st.caption("OmniView v2.0 Enterprise SaaS Edition")
+    st.caption("OmniView -- By Akshat Gupta")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -464,5 +464,5 @@ elif st.session_state.final_decision:
 elif not st.session_state.running:
     st.info(
         "👆 Enter your decision topic above and click **Run Debate** to start. "
-        "The three AI agents will debate for ~30–90 seconds depending on the topic."
+        "The three AI agents will debate for ~5-10 seconds depending on the topic."
     )
