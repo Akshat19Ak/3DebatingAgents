@@ -1,7 +1,6 @@
 from crewai import Task
-from .agents import optimist_agent, risk_analyst_agent, moderator_agent
 
-def create_tasks(decision_problem: str):
+def create_tasks(decision_problem: str, optimist_agent, risk_analyst_agent, moderator_agent):
     # Task 1: The Optimist's Analysis
     optimist_task = Task(
         description=f"Analyze this proposed idea/decision: '{decision_problem}'. "

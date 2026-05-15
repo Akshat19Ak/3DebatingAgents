@@ -156,18 +156,20 @@ with st.sidebar:
     st.markdown("---")
 
     # API Key status
-    load_dotenv()
-    api_key = os.getenv("GROQ_API_KEY", "")
-    if api_key and api_key != "your_groq_api_key_here":
+    if "groq_api_key" not in st.session_state:
+        st.session_state.groq_api_key = ""
+
+    api_key = st.session_state.groq_api_key
+
+    if api_key:
         st.markdown('<span class="badge badge-green">● API Key Connected</span>', unsafe_allow_html=True)
     else:
         st.markdown('<span class="badge" style="background:#7f1d1d;color:#fca5a5;">✗ API Key Missing</span>', unsafe_allow_html=True)
-        st.error("Groq API Key not found.")
+        st.error("Groq API Key not found for this session.")
         user_key = st.text_input("Enter Groq API Key:", type="password")
         if user_key:
-            os.environ["GROQ_API_KEY"] = user_key
-            api_key = user_key
-            st.success("API Key loaded for this session!")
+            st.session_state.groq_api_key = user_key
+            st.rerun()
 
     st.markdown("---")
     st.markdown("### 🚀 Why OmniView?")
@@ -238,7 +240,7 @@ class QueueWriter(io.TextIOBase):
         pass
 
 
-def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
+def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue, api_key: str):
     """
     Run the CrewAI crew in a background thread.
     Redirects stdout so verbose logs land in `log_queue`.
@@ -248,7 +250,7 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
     sys.stdout = QueueWriter(log_queue)
     try:
         evaluator = DebateEvaluator(decision_problem)
-        debate_crew = build_debate_crew(decision_problem)
+        debate_crew = build_debate_crew(decision_problem, api_key)
         result      = debate_crew.kickoff()
 
         # ── Extract individual task outputs (from CrewAI's task list) ──
@@ -317,8 +319,8 @@ run_button = st.button("🚀 Run Debate", disabled=st.session_state.running, typ
 if run_button:
     if not topic.strip():
         st.warning("Please enter a topic before running the debate.")
-    elif not (api_key and api_key != "your_groq_api_key_here"):
-        st.error("Cannot run: GROQ_API_KEY is not configured. Check your `.env` file.")
+    elif not st.session_state.groq_api_key:
+        st.error("Cannot run: GROQ_API_KEY is missing. Please enter it in the sidebar.")
     else:
         # Reset state for fresh run
         st.session_state.running        = True
@@ -333,9 +335,10 @@ if run_button:
 
         # Create the shared queue and start the background thread
         log_q  = queue.Queue()
+        # Launch thread, passing the API key
         thread = threading.Thread(
             target=_run_crew_in_thread,
-            args=(topic.strip(), log_q),
+            args=(st.session_state.topic_widget, log_q, st.session_state.groq_api_key),
             daemon=True
         )
         thread.start()
