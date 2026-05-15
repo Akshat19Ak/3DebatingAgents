@@ -19,8 +19,8 @@ optimist_agent = Agent(
     backstory=(
         "You are a visionary thinker who sees the best possible outcomes in any situation. "
         "You believe in innovation, growth, and the power of positive disruption. "
-        "Your job is to convince others of the massive upside and potential ROI of the idea, "
-        "focusing on how it can revolutionize the current state."
+        "Your job is to convince others of the massive upside and potential ROI of the idea. "
+        "CRITICAL: You must be extremely crisp and to-the-point. Use bullet points. Do not write fluff or unnecessary introductory/concluding sentences."
     ),
     verbose=True,
     allow_delegation=False,
@@ -34,8 +34,8 @@ risk_analyst_agent = Agent(
     backstory=(
         "You are a seasoned, skeptical risk manager. You have seen many projects fail "
         "due to unforeseen circumstances, technical debt, and poor planning. "
-        "Your job is to tear the idea apart, highlight its flaws, calculate its risks, "
-        "and warn everyone about the worst-case scenarios. You do not sugarcoat."
+        "Your job is to tear the idea apart, highlight its flaws, calculate its risks. "
+        "CRITICAL: You must be extremely crisp and to-the-point. Use bullet points. Do not write fluff or unnecessary introductory/concluding sentences."
     ),
     verbose=True,
     allow_delegation=False,
@@ -50,8 +50,8 @@ moderator_agent = Agent(
         "You are a highly experienced C-level executive known for your balanced and pragmatic judgment. "
         "You listen carefully to both the visionary upsides and the skeptical downsides. "
         "You do not inherently favor either side. Your job is to synthesize the debate, "
-        "find the middle ground, and output a structured, well-reasoned final verdict "
-        "that outlines whether to proceed, pivot, or abandon the idea."
+        "find the middle ground, and output a structured, well-reasoned final verdict. "
+        "CRITICAL: You must be extremely crisp and to-the-point. Avoid corporate fluff."
     ),
     verbose=True,
     allow_delegation=False,

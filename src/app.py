@@ -57,8 +57,8 @@ h1 { background: linear-gradient(90deg, #818cf8, #38bdf8);
 h2 { color: #818cf8 !important; }
 h3 { color: #38bdf8 !important; }
 
-/* ── Primary button ── */
-.stButton > button {
+/* ── Primary button (Run Debate) ── */
+.stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
     color: white !important;
     border: none !important;
@@ -67,11 +67,27 @@ h3 { color: #38bdf8 !important; }
     font-size: 1rem !important;
     font-weight: 600 !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    width: 100%;
 }
-.stButton > button:hover {
+.stButton > button[kind="primary"]:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(99,102,241,0.5) !important;
+}
+
+/* ── Pill Buttons (Quick Questions) ── */
+.stButton > button[kind="secondary"] {
+    background: #0f172a !important;
+    color: #818cf8 !important;
+    border: 1px solid #312e81 !important;
+    border-radius: 999px !important;
+    padding: 0.3rem 1.2rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #1e1b4b !important;
+    border-color: #4f46e5 !important;
+    color: #a5b4fc !important;
 }
 
 /* ── Text area ── */
@@ -150,6 +166,14 @@ with st.sidebar:
             st.success("API Key loaded for this session!")
 
     st.markdown("---")
+    st.markdown("### 🚀 Why OmniView?")
+    st.markdown("""
+- **Eliminate Bias:** Mathematical consensus tracking ensures balanced decisions.
+- **Accelerate Strategy:** Replace days of meetings with 15-second AI debates.
+- **Enterprise-Ready:** Fully observable, deterministic LLM orchestration.
+""")
+
+    st.markdown("---")
     st.markdown("### 🤖 The Agents")
     st.markdown("""
 | Agent | Role |
@@ -158,18 +182,20 @@ with st.sidebar:
 | ⚠️ Risk Analyst | Highlights all risks |
 | ⚖️ Moderator | Synthesises & decides |
 """)
+
     st.markdown("---")
     st.markdown("### 🛠 Tech Stack")
     st.markdown("""
 <span class="badge badge-purple">CrewAI</span>
-<span class="badge badge-blue">Groq LLaMA</span>
+<span class="badge badge-blue">Groq (Llama 3.3)</span>
 <span class="badge badge-green">Streamlit</span>
+<span class="badge badge-purple">Scikit-Learn (TF-IDF)</span>
+<span class="badge badge-blue">TextBlob</span>
+<span class="badge badge-green">Pydantic</span>
+<span class="badge badge-purple">LiteLLM</span>
 """, unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### 📊 Platform Metrics")
-    st.caption("OmniView evaluates debate diversity and ensures unbiased decisions via mathematical influence tracking.")
-    st.markdown("---")
-    st.caption("OmniView v2.0 SaaS Edition")
+    st.caption("OmniView v2.0 Enterprise SaaS Edition")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -255,17 +281,21 @@ st.markdown(
 st.markdown("---")
 
 # ── Quick Actions ──────────────────────────────────────────────────
-st.markdown("### ⚡ Quick Decision Templates (AI/ML & SWE)")
+st.markdown("### ⚡ Quick Questions")
+st.markdown("<p style='color: #94a3b8; font-size: 0.95rem; font-weight: 500; margin-bottom: 0.5rem;'>Ask anything — decisions are debated and scored</p>", unsafe_allow_html=True)
 def set_topic(t):
     st.session_state.topic_widget = t
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.button("RAG: Vector vs Graph DB", on_click=set_topic, args=("Should we use vector databases or graph databases for our new RAG system?",))
+    st.button("Vector vs Graph DB for RAG?", on_click=set_topic, args=("Should we use vector databases or graph databases for our new RAG system?",))
+    st.button("Build custom LLM vs use APIs?", on_click=set_topic, args=("Should we build our own LLM from scratch or use proprietary APIs like OpenAI?",))
 with col2:
-    st.button("Cloud: AWS to GCP Migration", on_click=set_topic, args=("Should we migrate from AWS to GCP to reduce ML inference costs?",))
+    st.button("Migrate AWS to GCP?", on_click=set_topic, args=("Should we migrate from AWS to GCP to reduce ML inference costs?",))
+    st.button("Microservices vs Monolith?", on_click=set_topic, args=("Should we adopt a microservices architecture instead of our current monolith?",))
 with col3:
-    st.button("Support: Human vs AI Bots", on_click=set_topic, args=("Should we replace our customer support human team completely with AI chatbots?",))
+    st.button("Human Support vs AI Bots?", on_click=set_topic, args=("Should we replace our customer support human team completely with AI chatbots?",))
+    st.button("Enforce 100% ML Test Coverage?", on_click=set_topic, args=("Should we enforce 100% test coverage across all our machine learning pipelines?",))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -277,7 +307,7 @@ topic = st.text_area(
     key         = "topic_widget",
 )
 
-run_button = st.button("🚀 Run Debate", disabled=st.session_state.running)
+run_button = st.button("🚀 Run Debate", disabled=st.session_state.running, type="primary")
 
 # ── Trigger ────────────────────────────────────────────────────────
 if run_button:
@@ -370,13 +400,8 @@ elif st.session_state.final_decision:
 
     st.markdown("---")
     st.markdown("## ⚖️ Final Moderator Decision")
-    st.markdown(
-        '<div style="background:#1e293b; border-left:4px solid #818cf8; '
-        'border-radius:8px; padding:1.2rem 1.6rem; margin-top:0.5rem;">'
-        + st.session_state.final_decision.replace("\n", "<br>")
-        + "</div>",
-        unsafe_allow_html=True,
-    )
+    # Render using native markdown so tables are correctly parsed
+    st.markdown(st.session_state.final_decision)
 
     if st.session_state.raw_metrics:
         opt_inf = st.session_state.raw_metrics.get("Debate_Quality", {}).get("raw_opt_influence", 50.0)
@@ -394,14 +419,31 @@ elif st.session_state.final_decision:
         </div>
         """, unsafe_allow_html=True)
 
-    if st.session_state.metrics_report:
+    if st.session_state.raw_metrics:
         st.markdown("---")
         st.markdown("## 📊 Observability & Performance Metrics")
-        st.markdown("Highlighting Agentic AI efficiency, neutrality, and token utilization:")
-        st.markdown(
-            f'<div class="log-box">{st.session_state.metrics_report}</div>',
-            unsafe_allow_html=True
-        )
+        
+        m = st.session_state.raw_metrics
+        perf = m.get("System_Performance", {})
+        qual = m.get("Debate_Quality", {})
+        read = m.get("Human_Readability", {})
+        
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("⏱️ Latency", f"{perf.get('Total_Latency_Seconds', 0)}s")
+        c2.metric("🪙 Tokens Used", perf.get('Estimated_Total_Tokens', 0))
+        c3.metric("🎯 Consensus Quality", f"{qual.get('Consensus_Quality_Score', 0)}/100")
+        c4.metric("🧠 Logical Consistency", f"{read.get('Logical_Consistency_Score', 0)}/100")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Differentiate Deeper Button
+        st.markdown("### 🔍 Need more depth?")
+        def trigger_deep_dive(topic):
+            st.session_state.topic_widget = "Perform a highly granular, advanced technical deep-dive into the nuances of: " + topic
+            st.session_state.final_decision = None
+            st.session_state.raw_metrics = None
+        
+        st.button("Differentiate Deeper", type="primary", on_click=trigger_deep_dive, args=(topic_shown,))
 
     # ── Previous logs (collapsible) ────────────────────────────────
     if st.session_state.logs:
@@ -412,7 +454,7 @@ elif st.session_state.final_decision:
                 unsafe_allow_html=True
             )
 
-    st.balloons()
+
 
 # ── Idle state (nothing run yet) ───────────────────────────────────
 elif not st.session_state.running:
