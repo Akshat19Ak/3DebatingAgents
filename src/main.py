@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.crew import build_debate_crew
+from src.metrics import DebateEvaluator
 
 def main():
     print("="*60)
@@ -33,6 +34,9 @@ def main():
     print("="*60 + "\n")
 
     try:
+        # Initialize Evaluator
+        evaluator = DebateEvaluator(decision_problem)
+
         # Build the crew
         debate_crew = build_debate_crew(decision_problem)
         
@@ -40,11 +44,23 @@ def main():
         # The result will be the final task's output (The Moderator's synthesis)
         result = debate_crew.kickoff()
         
+        # Extract individual task outputs for evaluation
+        tasks = debate_crew.tasks
+        optimist_output = str(tasks[0].output) if tasks and tasks[0].output else ""
+        risk_output = str(tasks[1].output) if len(tasks) > 1 and tasks[1].output else ""
+        final_decision = str(result)
+
+        # Evaluate performance
+        evaluator.evaluate(optimist_output, risk_output, final_decision)
+
         print("\n" + "="*60)
         print("============= FINAL MODERATOR DECISION =============")
         print("="*60)
-        print(result)
+        print(final_decision)
         print("="*60)
+
+        # Print the AI Observability Report
+        print(evaluator.get_formatted_report())
 
     except Exception as e:
         print(f"\nAn error occurred during the Crew AI process: {str(e)}")

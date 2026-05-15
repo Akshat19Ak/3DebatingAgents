@@ -19,6 +19,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from src.crew import build_debate_crew
+from src.metrics import DebateEvaluator
 
 # ══════════════════════════════════════════════════════════════════════
 #  PAGE CONFIG  (must be the very first Streamlit call)
@@ -172,6 +173,7 @@ defaults = {
     "optimist_out":    None,
     "risk_out":        None,
     "final_decision":  None,
+    "metrics_report":  None,
     "error":           None,
     "last_topic":      "",
 }
@@ -206,6 +208,7 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
     original_stdout = sys.stdout
     sys.stdout = QueueWriter(log_queue)
     try:
+        evaluator = DebateEvaluator(decision_problem)
         debate_crew = build_debate_crew(decision_problem)
         result      = debate_crew.kickoff()
 
@@ -214,12 +217,16 @@ def _run_crew_in_thread(decision_problem: str, log_queue: queue.Queue):
         optimist_output  = str(tasks[0].output) if tasks and tasks[0].output else "No output captured."
         risk_output      = str(tasks[1].output) if len(tasks) > 1 and tasks[1].output else "No output captured."
         final_decision   = str(result)
+        
+        evaluator.evaluate(optimist_output, risk_output, final_decision)
+        report = evaluator.get_formatted_report()
 
         log_queue.put({
             "type":           "done",
             "optimist_out":   optimist_output,
             "risk_out":       risk_output,
             "final_decision": final_decision,
+            "metrics_report": report,
         })
     except Exception as exc:
         log_queue.put({"type": "error", "message": str(exc)})
@@ -260,6 +267,7 @@ if run_button:
         st.session_state.optimist_out   = None
         st.session_state.risk_out       = None
         st.session_state.final_decision = None
+        st.session_state.metrics_report = None
         st.session_state.error          = None
         st.session_state.last_topic     = topic.strip()
 
@@ -294,6 +302,7 @@ if run_button:
                     st.session_state.optimist_out   = item["optimist_out"]
                     st.session_state.risk_out       = item["risk_out"]
                     st.session_state.final_decision = item["final_decision"]
+                    st.session_state.metrics_report = item.get("metrics_report")
                 elif item["type"] == "error":
                     st.session_state.error = item["message"]
             else:
@@ -341,6 +350,14 @@ elif st.session_state.final_decision:
         + "</div>",
         unsafe_allow_html=True,
     )
+
+    if st.session_state.metrics_report:
+        st.markdown("---")
+        st.markdown("## 📊 Observability & Performance Metrics")
+        st.markdown(
+            f'<div class="log-box">{st.session_state.metrics_report}</div>',
+            unsafe_allow_html=True
+        )
 
     # ── Previous logs (collapsible) ────────────────────────────────
     if st.session_state.logs:

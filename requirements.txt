@@ -4,3 +4,5 @@ python-dotenv
 pydantic
 litellm
 streamlit
+scikit-learn
+textblob
