@@ -13,6 +13,10 @@ import time
 import streamlit as st
 from dotenv import load_dotenv
 
+# Prevent CrewAI from registering signal handlers (which crashes in background threads)
+os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
+os.environ["OTEL_SDK_DISABLED"] = "true"
+
 # ── Make sure the project root is on the path so we can import `src.*`
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
