@@ -33,8 +33,8 @@ def create_tasks(decision_problem: str):
                     "You must arrive at a single decision out of the question: whether the organization should PROCEED, ABANDON, or PIVOT.",
         expected_output="An Executive Summary containing exactly:\n"
                         "1. A strictly formatted Markdown Table comparing Aspect, Pros, and Cons side-by-side.\n"
-                        "2. FINAL VERDICT: A single, extremely crisp definitive decision (Proceed/Abandon/Pivot) with a 1-2 sentence logical justification.\n"
-                        "3. MODERATOR INCLINATION: A 1-sentence statement declaring whether you lean more towards the Optimist or the Risk Analyst based on the severity of the points.",
+                        "2. MODERATOR INCLINATION: A 1-sentence statement declaring whether you lean more towards the Optimist or the Risk Analyst based on the severity of the points.\n"
+                        "3. FINAL VERDICT: A single, extremely crisp definitive decision (Proceed/Abandon/Pivot) with a 1-2 sentence logical justification.",
         agent=moderator_agent,
         context=[optimist_task, risk_task] # Moderator needs the outputs of both agents
     )
