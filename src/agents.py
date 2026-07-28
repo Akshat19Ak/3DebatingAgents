@@ -2,6 +2,32 @@ import os
 from crewai import Agent, LLM
 from dotenv import load_dotenv
 
+# --- FIX: Patch CrewAI cache_breakpoint incompatibility with Groq/LiteLLM ---
+# In crewai-1.15.7+, prompt cache markers ('cache_breakpoint': True) are added to messages
+# by default, causing Groq API to throw an unsupported property error.
+# We patch mark_cache_breakpoint and LLM._format_messages_for_provider to remove it.
+try:
+    import crewai.llms.cache
+    crewai.llms.cache.mark_cache_breakpoint = lambda message: message
+except Exception:
+    pass
+
+try:
+    import crewai.llm
+    _orig_format = crewai.llm.LLM._format_messages_for_provider
+    def _patched_format_messages_for_provider(self, messages):
+        if messages and not getattr(self, "is_anthropic", False):
+            messages = [
+                {k: v for k, v in msg.items() if k != "cache_breakpoint"}
+                for msg in messages
+                if isinstance(msg, dict)
+            ]
+        return _orig_format(self, messages)
+    crewai.llm.LLM._format_messages_for_provider = _patched_format_messages_for_provider
+except Exception:
+    pass
+# ----------------------------------------------------------------------------
+
 # Load environment variables
 load_dotenv()
 

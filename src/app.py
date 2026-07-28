@@ -17,6 +17,31 @@ from dotenv import load_dotenv
 os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 os.environ["OTEL_SDK_DISABLED"] = "true"
 
+# --- FIX: Patch CrewAI cache_breakpoint incompatibility with Groq/LiteLLM ---
+# Ensures Streamlit Cloud and standard PyPI crewai installations do not fail with
+# "property 'cache_breakpoint' is unsupported" when calling Groq APIs.
+try:
+    import crewai.llms.cache
+    crewai.llms.cache.mark_cache_breakpoint = lambda message: message
+except Exception:
+    pass
+
+try:
+    import crewai.llm
+    _orig_format = crewai.llm.LLM._format_messages_for_provider
+    def _patched_format_messages_for_provider(self, messages):
+        if messages and not getattr(self, "is_anthropic", False):
+            messages = [
+                {k: v for k, v in msg.items() if k != "cache_breakpoint"}
+                for msg in messages
+                if isinstance(msg, dict)
+            ]
+        return _orig_format(self, messages)
+    crewai.llm.LLM._format_messages_for_provider = _patched_format_messages_for_provider
+except Exception:
+    pass
+# ----------------------------------------------------------------------------
+
 # ── Make sure the project root is on the path so we can import `src.*`
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
