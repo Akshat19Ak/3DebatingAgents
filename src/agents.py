@@ -34,7 +34,7 @@ load_dotenv()
 def create_agents(api_key: str):
     # Initialize the LLM using CrewAI's native litellm wrapper
     llm = LLM(
-        model="groq/llama-3.3-70b-versatile",
+        model="groq/openai/gpt-oss-120b",
         api_key=api_key,
         temperature=0.7
     )

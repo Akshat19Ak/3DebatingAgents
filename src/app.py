@@ -218,7 +218,7 @@ with st.sidebar:
     st.markdown("### 🛠 Tech Stack")
     st.markdown("""
 <span class="badge badge-purple">CrewAI</span>
-<span class="badge badge-blue">Groq (Llama 3.3)</span>
+<span class="badge badge-blue">Groq (gpt-oss-120b)</span>
 <span class="badge badge-green">Streamlit</span>
 <span class="badge badge-purple">Scikit-Learn (TF-IDF)</span>
 <span class="badge badge-blue">TextBlob</span>
